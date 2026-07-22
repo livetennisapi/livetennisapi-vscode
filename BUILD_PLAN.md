@@ -97,12 +97,26 @@ logic. Reported upstream in my summary.
 
 ## Open questions & assumptions
 
-- **[ASSUMPTION, non-blocking]** `tour` is a supported query param — unverifiable without a key;
-  if wrong, the API would 400 and the extension surfaces the error rather than crashing.
-- **[ASSUMPTION, non-blocking]** Live payload shape matches the brief; all field access is
-  optional-chained so a shape drift degrades to "-" rather than throwing.
-- **[BLOCKING for verification only]** No API key exists on this machine and none was supplied,
-  so the authenticated live path cannot be exercised. Recorded as NOT DONE, not as passing.
+All resolved in the second pass, once a real key was supplied:
+
+- ~~`tour` is a supported query param~~ — **[FACT]** confirmed; `tour=wta` reaches the API and the
+  live path works.
+- ~~Live payload shape matches the brief~~ — **[FACT]** confirmed against 48–50 real live matches,
+  with three corrections (below).
+- ~~No API key exists on this machine~~ — resolved; a real key was supplied and used.
+
+### Corrections learned from real data
+
+- **Rate limiting is per *principal*, not per IP, when authenticated.** Measured directly: the
+  unkeyed bucket ran 29→28 while the keyed bucket ran 25→24→23, with different `retry-after`
+  windows (60 vs 47). My first-pass claim came entirely from the unauthenticated fallback bucket.
+  Corrected in the README and in `controller.ts`.
+- **`round` restates the tournament** on lower tours and even on ATP events
+  (`"Kitzbuhel"` + `"ATP Kitzbuhel - Quarter-finals"`), which rendered the name twice in every
+  tooltip and picker row. Fixed by `shortRound()`; picker detail dropped from 98 to 65 characters.
+- **`country` arrives lowercase** (`"srb"`); uppercased for display.
+- `server` is nullable and `data_completeness` is a new additive field — both already handled;
+  now covered by explicit checks.
 
 ## Status — all units complete
 
@@ -118,21 +132,37 @@ logic. Reported upstream in my summary.
 ### Verified (evidence, not claim)
 
 - `tsc --noEmit` exit 0; esbuild production bundle 14.2kb.
-- 41/41 behavioural checks against a stubbed extension host + stubbed fetch, covering every
+- 45/45 behavioural checks against a stubbed extension host + stubbed fetch, covering every
   graceful state, the pin/unpin lifecycle, the poll-interval clamp table, the `X-API-Key` header,
-  and zero timers left alive after `deactivate()`.
-- `npx @vscode/vsce package` -> 9 files, 36.96 KB; no `src/`, `node_modules/` or tooling inside.
+  nullable `server`, and zero timers left alive after `deactivate()`.
+- `npx @vscode/vsce package` -> 9 files, 37.17 KB; no `src/`, `node_modules/` or tooling inside.
 - Secret scan of the packaged bundle: 0 matches. Only `require("vscode")` left external.
-- Sideloaded into VS Code; the real extension host logged
-  `_doActivateExtension livetennisapi.livetennisapi-scores` with no error.
+- All 48 live matches run through the formatters: no `undefined`/`NaN`/`?` leaked into any label;
+  longest status bar label 45 chars, comfortably under the 60-char truncation cap.
+
+### Verified in a real editor, with a real key
+
+Run in an **isolated** `--user-data-dir`/`--extensions-dir` profile, so the real key never touched
+the developer's own VS Code profile or keyring. Captured with python-Xlib against an XWayland
+window (`--ozone-platform=x11`), because GNOME blocks the Shell screenshot DBus API.
+
+- **Live scores render**: observed `🎾 Jankanj • 7-5 6-5 Bellifemine`, matching that match's payload.
+- **Pinning works end to end**: with `pinnedMatchId` = 21210 the bar showed
+  `🎾 Munk 6-7 6-2 4-2 • Kokkinis` rather than the default first match, and the games grid
+  `[[6,6,4],[7,2,2]]` rendered as `6-7 6-2 4-2` — confirming the player-major indexing on real data.
+- **401 halt observed visually**: `🔑 Tennis: key rejected` on the amber warning background.
+- **Migration with a real key**: `livetennis.apiKey` was removed from `settings.json`; the value is
+  stored encrypted — the plaintext key appears nowhere in the profile, and nowhere in this repo.
+- **12/12 checks against the live API**: the QuickPick listed 50 real live matches with correct
+  labels/details/ids, pinning followed a non-first match, and a wrong key produced a real 401 halt.
 
 ### NOT DONE
 
-- **The status bar has not been observed updating against a real API key.** No key exists on this
-  machine and none was supplied, so the authenticated path was never exercised end to end. Nothing
-  above should be read as evidence that live scores render correctly in a real editor.
-- GNOME blocked programmatic screen capture, so even the no-key status bar state was not visually
-  confirmed in the GUI — only its logic was, under the stubbed host.
+- **The QuickPick was never observed as a rendered GUI panel.** Mutter does not route XTEST
+  synthetic key or pointer events to XWayland surfaces, so neither the command palette nor a click
+  on the status bar item could be driven programmatically. Its *contents* were verified against the
+  live API and pinning was confirmed visually through persisted state — but no one has watched the
+  picker itself open, and I am not claiming otherwise.
 
 ## Handoff
 
