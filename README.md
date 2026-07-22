@@ -54,11 +54,14 @@ reads "No live matches" for most of the day.
 
 ### Why the poll floor is 60 seconds
 
-The free tier allows **30 requests per minute**, and the limit is enforced **per IP address**, not
-per key — so other tools on the same machine share the budget. At 60s one editor window costs one
-request per minute. Values below 60 are clamped up to 60 in code, not merely warned about in the
-settings UI. On HTTP 429 the extension waits for the `Retry-After` the API sends and never polls
-faster than it asks.
+The free tier allows **30 requests per minute**, counted **per key** once you are authenticated — so
+every editor window and script sharing one key draws on the same budget. (Unauthenticated requests
+fall back to a separate per-IP bucket.) At 60s one editor window costs one request per minute.
+Values below 60 are clamped up to 60 in code, not merely warned about in the settings UI. On HTTP
+429 the extension waits for the `Retry-After` the API sends and never polls faster than it asks.
+
+`Retry-After` is present on *every* response from this API, including `200`s — it reports the
+seconds left in the current window, not that you were limited. Only an HTTP 429 means that.
 
 ### The `apiKey` setting, honestly
 

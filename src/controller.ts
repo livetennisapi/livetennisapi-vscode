@@ -20,8 +20,11 @@ import { quickPickDetail, quickPickLabel, statusBarLabel, tooltipMarkdown } from
 /**
  * The free tier allows 30 requests per minute and the API sends `retry-after`
  * once that is spent. 60s keeps one editor to one request per minute, well
- * inside the budget and leaving room for other clients on the same IP — the
- * limit is enforced per IP, not per key.
+ * inside the budget and leaving room for your other tools using the same key.
+ *
+ * Measured: when authenticated the limit is per *principal* — the key — so every
+ * editor window and script sharing one key draws on a single 30/min budget. The
+ * per-IP bucket is only the unauthenticated fallback and is counted separately.
  *
  * The manifest declares `minimum: 60`, but that only makes the settings UI warn;
  * it does not bind a hand-edited settings.json or a programmatic update. So the

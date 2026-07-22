@@ -83,6 +83,40 @@ function truncate(text: string, max = MAX_LABEL): string {
 }
 
 /**
+ * Strip the tournament name back off the round.
+ *
+ * On the lower tours `round` restates the tournament: tournament
+ * `"M15 Kursumlijska Banja 10"` arrives with round
+ * `"M15 Kursumlijska Banja 10 - 1/16-finals"`. Rendered naively that reads
+ * twice in every tooltip and every picker row.
+ *
+ * The two are rarely identical. Real pairings seen live:
+ *   `"W35 Gentofte (Denmark)"` + `"W35 Gentofte - 1/16-finals"`      (suffixed)
+ *   `"Kitzbuhel"`              + `"ATP Kitzbuhel - Quarter-finals"`  (prefixed)
+ * so the leading segment is dropped when either name *contains* the other, not
+ * merely when one is a prefix. The 3-character floor stops a very short or
+ * generic name matching by accident.
+ */
+export function shortRound(
+  tournament: string | null | undefined,
+  round: string | null | undefined,
+): string {
+  const text = (round ?? '').trim();
+  const event = (tournament ?? '').trim();
+  if (!text || !event) return text;
+
+  const cut = text.indexOf(' - ');
+  if (cut === -1) return text;
+
+  const head = text.slice(0, cut).trim().toLowerCase();
+  const name = event.toLowerCase();
+  if (head.length >= 3 && name.length >= 3 && (name.includes(head) || head.includes(name))) {
+    return text.slice(cut + 3).trim() || text;
+  }
+  return text;
+}
+
+/**
  * The status bar line, e.g. `🎾 Alcaraz 6-4 3-2 Sinner`.
  *
  * A `•` marks the server when the API reports one. Matches with no score yet
@@ -103,7 +137,8 @@ export function statusBarLabel(match: Match): string {
 function playerLine(player: Player | undefined, serving: boolean): string {
   const name = (player?.name ?? 'Unknown').trim() || 'Unknown';
   const bits: string[] = [];
-  if (player?.country) bits.push(String(player.country));
+  // The API sends lowercase ISO codes ("srb", "ita"); show them as flags read.
+  if (player?.country) bits.push(String(player.country).toUpperCase());
   if (typeof player?.ranking === 'number') bits.push(`#${player.ranking}`);
   const suffix = bits.length ? ` _(${bits.join(', ')})_` : '';
   return `${serving ? '**•** ' : ''}${name}${suffix}`;
@@ -112,7 +147,9 @@ function playerLine(player: Player | undefined, serving: boolean): string {
 /** Markdown body for the status bar tooltip. Caller wraps in a MarkdownString. */
 export function tooltipMarkdown(match: Match, updatedAt: Date): string {
   const score = match.score;
-  const header = [match.tournament, match.round].filter(Boolean).join(' — ');
+  const header = [match.tournament, shortRound(match.tournament, match.round)]
+    .filter(Boolean)
+    .join(' — ');
   const lines: string[] = [];
 
   if (header) lines.push(`**${header}**`);
@@ -158,7 +195,7 @@ export function quickPickDetail(match: Match): string {
   const points = pointsText(match.score);
   return [
     match.tournament,
-    match.round,
+    shortRound(match.tournament, match.round),
     match.surface,
     points ? `points ${points}` : undefined,
   ]

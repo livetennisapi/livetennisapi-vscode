@@ -62,15 +62,21 @@ export function createClient(apiKey: string): LiveTennisAPI {
 /**
  * Fetch the current live matches for a tour.
  *
- * The client's `listMatches` types its params as `{status, limit, offset}` and
- * has no `tour`, but it spreads whatever it is given straight into the query
- * string — so `tour` reaches the API correctly and only the *type* objects.
- * The single cast below is that gap, isolated to one line rather than forking
- * the client's transport. Filed upstream; remove the cast once `tour` is typed.
+ * The published client (npm `livetennisapi@1.0.2`) types `listMatches` params as
+ * `{status, limit, offset}` with no `tour`, but it spreads whatever it is given
+ * straight into the query string — so `tour` reaches the API correctly and only
+ * the *type* objects. The single cast below is that gap, isolated to one line
+ * rather than forking the client's transport.
  *
- * `status` is always passed explicitly: the client computes its default as
- * `{ status: params.status ?? 'live', ...params }`, so an explicit `undefined`
- * in `params` would overwrite the default back to undefined.
+ * Upstream has since added a `Tour` type and typed both `listMatches` and
+ * `listFixtures`, but that fix is **not yet on npm** — the registry's 1.0.2 is
+ * still the pre-fix build. Drop this cast once a release carrying it ships and
+ * the dependency range is raised.
+ *
+ * `status` is passed explicitly for a second reason: the published client
+ * computes its default as `{ status: params.status ?? 'live', ...params }` with
+ * the spread *last*, so an explicit `undefined` overwrites the default back to
+ * undefined. Also fixed upstream, also unreleased.
  */
 export function fetchLiveMatches(
   client: LiveTennisAPI,

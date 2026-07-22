@@ -28,7 +28,16 @@ Initial release.
 - A key found in `livetennis.apiKey` is migrated into SecretStorage, the setting is cleared at
   every scope that held it, and the user is warned to rotate it.
 
+- Lower-tour events restate the tournament inside `round` (`"M15 Kursumlijska Banja 10"` with
+  `"M15 Kursumlijska Banja 10 - 1/16-finals"`, and `"Kitzbuhel"` with
+  `"ATP Kitzbuhel - Quarter-finals"`). The tournament is stripped back off the round so it is not
+  printed twice in tooltips and picker rows.
+- Country codes are uppercased for display; the API sends them lowercase.
+
 ### Notes
 
 - The poll interval floor is 60 seconds, enforced in code. The free tier allows 30 requests per
-  minute, rate limited per IP address rather than per key.
+  minute, counted per key once authenticated; unauthenticated requests fall back to a separate
+  per-IP bucket.
+- `Retry-After` is returned on every response, including `200`s — it reports the seconds left in
+  the current window. Only an HTTP 429 means you were actually rate limited.
