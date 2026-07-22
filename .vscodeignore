@@ -1,0 +1,19 @@
+# Ship only the bundle, the icon and the docs.
+.vscode/**
+.github/**
+node_modules/**
+out/**
+src/**
+media/icon.svg
+
+**/*.ts
+**/*.map
+**/tsconfig.json
+**/.eslintrc.json
+
+esbuild.mjs
+tools/**
+BUILD_PLAN.md
+PUBLISHING.md
+.gitignore
+.vscodeignore
