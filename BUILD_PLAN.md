@@ -104,6 +104,36 @@ logic. Reported upstream in my summary.
 - **[BLOCKING for verification only]** No API key exists on this machine and none was supplied,
   so the authenticated live path cannot be exercised. Recorded as NOT DONE, not as passing.
 
+## Status — all units complete
+
+| Unit | State | Commit |
+|---|---|---|
+| BUILD-001 scaffold/manifest/icon | done | `f10139f` |
+| BUILD-002 API adapter | done | `a083c2c` |
+| BUILD-003 formatters | done | `a083c2c` |
+| BUILD-004 controller | done | `d72e28e` |
+| BUILD-005 entry/commands/migration | done | `d72e28e` |
+| BUILD-006 docs + vsix | done | see final commit |
+
+### Verified (evidence, not claim)
+
+- `tsc --noEmit` exit 0; esbuild production bundle 14.2kb.
+- 41/41 behavioural checks against a stubbed extension host + stubbed fetch, covering every
+  graceful state, the pin/unpin lifecycle, the poll-interval clamp table, the `X-API-Key` header,
+  and zero timers left alive after `deactivate()`.
+- `npx @vscode/vsce package` -> 9 files, 36.96 KB; no `src/`, `node_modules/` or tooling inside.
+- Secret scan of the packaged bundle: 0 matches. Only `require("vscode")` left external.
+- Sideloaded into VS Code; the real extension host logged
+  `_doActivateExtension livetennisapi.livetennisapi-scores` with no error.
+
+### NOT DONE
+
+- **The status bar has not been observed updating against a real API key.** No key exists on this
+  machine and none was supplied, so the authenticated path was never exercised end to end. Nothing
+  above should be read as evidence that live scores render correctly in a real editor.
+- GNOME blocked programmatic screen capture, so even the no-key status bar state was not visually
+  confirmed in the GUI — only its logic was, under the stubbed host.
+
 ## Handoff
 
 Build, then `/full-review`. Most relevant personas for this work: `/security-audit` (secret
