@@ -1,7 +1,15 @@
 {
   "compilerOptions": {
-    "module": "Node16",
-    "moduleResolution": "Node16",
+    // esbuild does the emit (to CJS, for the extension host); tsc is only a
+    // typechecker here, so Bundler resolution is the matching mode.
+    //
+    // It is also required: `livetennisapi` is dual ESM/CJS but its exports map
+    // points `types` unconditionally at the ESM `index.d.ts`, never at the
+    // `index.d.cts` it ships. Under Node16 resolution that makes a CJS import
+    // of it a TS1479 error. Bundler resolution sidesteps the mismatch, and
+    // esbuild picks the correct `require` build at bundle time.
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
     "target": "ES2022",
     "lib": ["ES2022"],
     "outDir": "out",
