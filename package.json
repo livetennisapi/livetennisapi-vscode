@@ -1,0 +1,106 @@
+{
+  "name": "livetennisapi-scores",
+  "displayName": "Live Tennis Scores",
+  "description": "Live tennis scores and match state in your status bar — ATP, WTA, Challenger, ITF and juniors.",
+  "version": "0.1.0",
+  "publisher": "livetennisapi",
+  "license": "MIT",
+  "icon": "media/icon.png",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "keywords": [
+    "tennis",
+    "live scores",
+    "scoreboard",
+    "atp",
+    "wta"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/livetennisapi/livetennisapi-vscode.git"
+  },
+  "bugs": {
+    "url": "https://github.com/livetennisapi/livetennisapi-vscode/issues"
+  },
+  "homepage": "https://livetennisapi.com",
+  "galleryBanner": {
+    "color": "#0B3D2E",
+    "theme": "dark"
+  },
+  "main": "./dist/extension.js",
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "livetennis.showMatches",
+        "title": "Live Tennis: Show Matches"
+      },
+      {
+        "command": "livetennis.setApiKey",
+        "title": "Live Tennis: Set API Key"
+      },
+      {
+        "command": "livetennis.refresh",
+        "title": "Live Tennis: Refresh"
+      }
+    ],
+    "configuration": {
+      "title": "Live Tennis Scores",
+      "properties": {
+        "livetennis.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show live tennis scores in the status bar and poll for updates."
+        },
+        "livetennis.tour": {
+          "type": "string",
+          "default": "all",
+          "enum": [
+            "all",
+            "atp",
+            "wta",
+            "challenger",
+            "itf",
+            "juniors"
+          ],
+          "description": "Which tour to follow. 'all' shows matches from every tour."
+        },
+        "livetennis.pollIntervalSeconds": {
+          "type": "number",
+          "default": 60,
+          "minimum": 60,
+          "description": "Seconds between refreshes. The free tier allows 30 requests per minute, so 60 is the documented floor; values below 60 are clamped up to 60."
+        },
+        "livetennis.apiKey": {
+          "type": "string",
+          "default": "",
+          "markdownDescription": "**Migration only — not storage.** A key entered here is moved into VS Code's encrypted SecretStorage on the next activation and this setting is then cleared automatically. Prefer the **Live Tennis: Set API Key** command. Keys left in `settings.json` are replicated by Settings Sync and are easily pasted into bug reports."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "compile": "node esbuild.mjs",
+    "watch": "node esbuild.mjs --watch",
+    "typecheck": "tsc --noEmit",
+    "vscode:prepublish": "npm run typecheck && node esbuild.mjs --production",
+    "package": "vsce package"
+  },
+  "dependencies": {
+    "livetennisapi": "^1.0.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/vscode": "^1.85.0",
+    "@vscode/vsce": "^3.2.0",
+    "esbuild": "^0.24.0",
+    "ovsx": "^0.10.0",
+    "typescript": "^5.5.0"
+  }
+}

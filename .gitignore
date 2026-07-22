@@ -1,0 +1,9 @@
+node_modules/
+dist/
+out/
+*.vsix
+.DS_Store
+
+# Never commit credentials. The API key belongs in VS Code SecretStorage.
+.env
+*.key
