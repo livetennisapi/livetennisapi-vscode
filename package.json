@@ -93,7 +93,7 @@
     "package": "vsce package"
   },
   "dependencies": {
-    "livetennisapi": "^1.0.2"
+    "livetennisapi": "^1.1.0"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",

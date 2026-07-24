@@ -24,7 +24,6 @@ export type TourFilter = 'all' | 'atp' | 'wta' | 'challenger' | 'itf' | 'juniors
  */
 const PAGE_LIMIT = 50;
 
-type ListMatchesParams = Parameters<LiveTennisAPI['listMatches']>[0];
 
 export function getApiKey(secrets: SecretStorage): Thenable<string | undefined> {
   return secrets.get(SECRET_KEY);
@@ -62,21 +61,10 @@ export function createClient(apiKey: string): LiveTennisAPI {
 /**
  * Fetch the current live matches for a tour.
  *
- * The published client (npm `livetennisapi@1.0.2`) types `listMatches` params as
- * `{status, limit, offset}` with no `tour`, but it spreads whatever it is given
- * straight into the query string — so `tour` reaches the API correctly and only
- * the *type* objects. The single cast below is that gap, isolated to one line
- * rather than forking the client's transport.
- *
- * Upstream has since added a `Tour` type and typed both `listMatches` and
- * `listFixtures`, but that fix is **not yet on npm** — the registry's 1.0.2 is
- * still the pre-fix build. Drop this cast once a release carrying it ships and
- * the dependency range is raised.
- *
- * `status` is passed explicitly for a second reason: the published client
- * computes its default as `{ status: params.status ?? 'live', ...params }` with
- * the spread *last*, so an explicit `undefined` overwrites the default back to
- * undefined. Also fixed upstream, also unreleased.
+ * `status` is passed explicitly because the published client computes its
+ * default as `{ status: params.status ?? 'live', ...params }` with the spread
+ * *last* in versions before 1.1.0, so an explicit `undefined` overwrites the
+ * default back to undefined. Passing it explicitly is correct against either.
  */
 export function fetchLiveMatches(
   client: LiveTennisAPI,
@@ -87,5 +75,5 @@ export function fetchLiveMatches(
     limit: PAGE_LIMIT,
     ...(tour === 'all' ? {} : { tour }),
   };
-  return client.listMatches(params as ListMatchesParams);
+  return client.listMatches(params);
 }
