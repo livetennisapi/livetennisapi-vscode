@@ -8,10 +8,21 @@ Live tennis scores in your VS Code status bar — ATP, WTA, Challenger, ITF and 
 
 The `•` marks the player serving. Click the item to pick a different match and pin it.
 
-![The status bar item and the match picker](media/screenshot.png)
+What it looks like (a real screenshot will follow — none is included yet rather than a mock-up):
 
-> **Screenshot placeholder** — `media/screenshot.png` is not yet captured. Replace it before
-> publishing to the Marketplace.
+```text
+Status bar, right side:          🎾 Alcaraz • 6-3 6-5 Sinner
+
+Click it → QuickPick "Live tennis matches":
+  ┌──────────────────────────────────────────────────────────┐
+  │ Select a match to pin it to the status bar               │
+  ├──────────────────────────────────────────────────────────┤
+  │ Alcaraz • 6-3 6-5 Sinner              📌 pinned          │
+  │   Cincinnati · Final · Hard · points 30-15               │
+  │ Gauff 4-6 6-3 2-1 • Swiatek                              │
+  │   Cincinnati · Semi-finals · Hard · points 15-0          │
+  └──────────────────────────────────────────────────────────┘
+```
 
 ## Features
 
@@ -62,6 +73,18 @@ Values below 60 are clamped up to 60 in code, not merely warned about in the set
 
 `Retry-After` is present on *every* response from this API, including `200`s — it reports the
 seconds left in the current window, not that you were limited. Only an HTTP 429 means that.
+
+### The daily budget
+
+The per-minute limit is not the only one: the free tier also caps **1,000 requests per day**. At
+the 60-second floor one continuously open editor window makes 1,440 requests per 24 hours, so it
+crosses the daily cap after roughly **16.7 hours** of uninterrupted uptime. For genuinely all-day
+sessions, set `livetennis.pollIntervalSeconds` to **90 or more** (≤ 960 requests/day) — or share
+the key with nothing else and accept what happens at the cap: the API answers `429`, and the
+extension keeps the last score visible with a stale marker (⚠), waits at least as long as the
+`Retry-After` the API asks for (never less than your poll interval), and resumes by itself. Daily
+quota does not reset at a fixed time of day; the `429` body carries the exact reset instant
+(`resets_at`).
 
 ### The `apiKey` setting, honestly
 
