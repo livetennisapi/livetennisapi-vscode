@@ -62,23 +62,26 @@ npx @vscode/vsce ls                       # files that will be included
 unzip -l livetennisapi-scores-0.1.0.vsix  # what actually got in
 ```
 
-## The README screenshot will 404 until the repo is public
+## The README currently has no screenshot — on purpose
 
-`vsce` rewrites **relative** image paths in the README to raw URLs under the `repository` field
-before uploading. Shipping `media/screenshot.png` inside the `.vsix` therefore does *not* make it
-render on the Marketplace listing — the store fetches
-`https://github.com/livetennisapi/livetennisapi-vscode/raw/HEAD/media/screenshot.png`.
+There is deliberately no `media/screenshot.png`: the previous file was a generated placeholder,
+not a real capture, and shipping a mock-up as if it were a screenshot is worse than shipping
+none. The README describes the status bar and match picker in text until a real capture exists.
 
-So before the first publish, either push this repo (with the image) to that URL, or change the
-README to an absolute HTTPS image URL. Right now `media/screenshot.png` is a generated
-**placeholder**, not a real capture; replace it either way.
+When adding one, remember `vsce` rewrites **relative** image paths in the README to raw URLs
+under the `repository` field before uploading — shipping the image inside the `.vsix` does *not*
+make it render on the Marketplace listing; the store fetches
+`https://github.com/livetennisapi/livetennisapi-vscode/raw/HEAD/media/screenshot.png`. So the
+repo (with the image) must be public at that URL, or the README must use an absolute HTTPS image
+URL.
 
 ## Release checklist
 
 - [ ] Bump `version` in `package.json`.
 - [ ] Move the `CHANGELOG.md` Unreleased entries under the new version heading.
 - [ ] `npm run typecheck` is clean.
-- [ ] `media/screenshot.png` is a real capture, and reachable at the `repository` raw URL.
+- [ ] If a README screenshot has been added: it is a **real capture** (never a mock-up) and is
+      reachable at the `repository` raw URL.
 - [ ] `npx @vscode/vsce package` succeeds; inspect the file list.
 - [ ] Confirm no key literal is present: `unzip -p *.vsix extension/dist/extension.js | grep -c twjp_` returns `0`.
 - [ ] Publish to the Marketplace, then Open VSX, from the same `.vsix`.

@@ -7,7 +7,11 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-- Capture `media/screenshot.png` and remove the placeholder note from the README.
+- Capture a real screenshot and add it to the README. (The generated placeholder image was
+  removed; the README currently describes the status bar and match picker in text.)
+- README now documents the free tier's 1,000 requests/day cap: 60s polling crosses it after
+  ~16.7 hours of continuous uptime, so 90s+ is recommended for all-day sessions, and the
+  extension's actual behaviour on 429 is described.
 
 ## [0.1.0] — 2026-07-22
 
