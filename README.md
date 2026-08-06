@@ -76,10 +76,10 @@ seconds left in the current window, not that you were limited. Only an HTTP 429 
 
 ### The daily budget
 
-The per-minute limit is not the only one: the free tier also caps **1,000 requests per day**. At
+The per-minute limit is not the only one: the free tier also caps **100 requests per day**. At
 the 60-second floor one continuously open editor window makes 1,440 requests per 24 hours, so it
-crosses the daily cap after roughly **16.7 hours** of uninterrupted uptime. For genuinely all-day
-sessions, set `livetennis.pollIntervalSeconds` to **90 or more** (≤ 960 requests/day) — or share
+crosses the daily cap after roughly **1.7 hours** of uninterrupted uptime. For genuinely all-day
+sessions, set `livetennis.pollIntervalSeconds` to **900 or more** (≤ 96 requests/day) — or share
 the key with nothing else and accept what happens at the cap: the API answers `429`, and the
 extension keeps the last score visible with a stale marker (⚠), waits at least as long as the
 `Retry-After` the API asks for (never less than your poll interval), and resumes by itself. Daily
