@@ -2,7 +2,7 @@
   "name": "livetennisapi-scores",
   "displayName": "Live Tennis Scores",
   "description": "Live tennis scores and match state in your status bar — ATP, WTA, Challenger, ITF and juniors.",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "publisher": "livetennisapi",
   "author": {
     "name": "Live Tennis API",
