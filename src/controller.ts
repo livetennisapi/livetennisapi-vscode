@@ -18,12 +18,21 @@ import { createClient, fetchLiveMatches, getApiKey, setApiKey, type TourFilter }
 import { quickPickDetail, quickPickLabel, statusBarLabel, tooltipMarkdown } from './format';
 
 /**
- * The free tier allows 30 requests per minute and the API sends `retry-after`
- * once that is spent. 60s keeps one editor to one request per minute, well
- * inside the budget and leaving room for your other tools using the same key.
+ * Two budgets bound the poll interval, and they bind at different scales.
+ *
+ * The *floor* is the per-minute budget: the free tier allows 30 requests per
+ * minute and the API sends `retry-after` once that is spent. 60s keeps one
+ * editor to one request per minute, inside that window.
+ *
+ * The *default* is set by the daily budget: the free tier also caps **100
+ * requests per day**. At 60s an always-on editor makes 1,440 requests per
+ * 24 hours — 14x the daily cap, gone after ~1.7 hours. At 900s (15 minutes)
+ * it makes at most 96 per day, which fits with a little room for the manual
+ * Refresh command. Always-on polling faster than that belongs on a BASIC key
+ * (1,000/day).
  *
  * Measured: when authenticated the limit is per *principal* — the key — so every
- * editor window and script sharing one key draws on a single 30/min budget. The
+ * editor window and script sharing one key draws on a single budget. The
  * per-IP bucket is only the unauthenticated fallback and is counted separately.
  *
  * The manifest declares `minimum: 60`, but that only makes the settings UI warn;
@@ -31,9 +40,21 @@ import { quickPickDetail, quickPickLabel, statusBarLabel, tooltipMarkdown } from
  * floor is enforced here, where it actually holds.
  */
 export const MIN_POLL_SECONDS = 60;
+export const DEFAULT_POLL_SECONDS = 900;
 
 const PINNED_KEY = 'livetennis.pinnedMatchId';
 const SIGNUP_URL = 'https://livetennisapi.com/subscribe/free';
+
+/** Seconds from now until an instant in ms; undefined when the input is junk. */
+function secondsUntil(instantMs: number): number | undefined {
+  if (!Number.isFinite(instantMs)) return undefined;
+  return Math.max(0, Math.ceil((instantMs - Date.now()) / 1000));
+}
+
+/** When polling will resume, phrased for a tooltip. */
+function resumeText(waitSeconds: number): string {
+  return new Date(Date.now() + waitSeconds * 1000).toLocaleString();
+}
 
 interface Settings {
   enabled: boolean;
@@ -43,9 +64,11 @@ interface Settings {
 
 function readSettings(): Settings {
   const config = vscode.workspace.getConfiguration('livetennis');
-  const requested = config.get<number>('pollIntervalSeconds', MIN_POLL_SECONDS);
+  const requested = config.get<number>('pollIntervalSeconds', DEFAULT_POLL_SECONDS);
   const pollSeconds =
-    Number.isFinite(requested) ? Math.max(MIN_POLL_SECONDS, Math.floor(requested)) : MIN_POLL_SECONDS;
+    Number.isFinite(requested)
+      ? Math.max(MIN_POLL_SECONDS, Math.floor(requested))
+      : DEFAULT_POLL_SECONDS;
 
   return {
     enabled: config.get<boolean>('enabled', true),
@@ -163,10 +186,7 @@ export class TennisController implements vscode.Disposable {
     }
 
     if (err instanceof RateLimited) {
-      // Honour retry-after; never poll faster than it asks.
-      const wait = Math.max(err.retryAfter ?? pollSeconds, pollSeconds);
-      this.renderStale('rate limited', `Rate limited. Retrying in ${wait}s.`);
-      this.scheduleNext(wait);
+      this.handleRateLimit(err, pollSeconds);
       return;
     }
 
@@ -179,6 +199,66 @@ export class TennisController implements vscode.Disposable {
     const message = err instanceof Error ? err.message : String(err);
     this.renderError(message);
     this.scheduleNext(pollSeconds);
+  }
+
+  /**
+   * The API sends three distinct 429 shapes, and each deserves a different wait:
+   *
+   * - `abuse_throttled` — a 24-hour block applied to clients that chronically
+   *   poll past their cap. The body carries `retry_at_epoch`, the exact instant
+   *   the block lifts. Retrying sooner cannot succeed and only marks the client
+   *   as still misbehaving, so the poller sleeps until that instant and the
+   *   status bar says why.
+   * - the daily cap (`scope: "day"`) — the body carries `resets_at`, the ISO
+   *   instant the daily window rolls over. That instant is the only truth about
+   *   the reset time; it is not a fixed hour of the day. Sleep until then.
+   * - the per-minute window — honour `Retry-After`; never poll faster than it
+   *   asks.
+   */
+  private handleRateLimit(err: RateLimited, pollSeconds: number): void {
+    const body = (typeof err.body === 'object' && err.body !== null ? err.body : {}) as {
+      retry_at_epoch?: unknown;
+      resets_at?: unknown;
+      scope?: unknown;
+      limit_per_day?: unknown;
+    };
+
+    if (err.errorCode === 'abuse_throttled') {
+      const until =
+        typeof body.retry_at_epoch === 'number'
+          ? secondsUntil(body.retry_at_epoch * 1000)
+          : undefined;
+      // No parseable instant: the documented block is 24h, but back off an hour
+      // at a time rather than hammering a throttle we know is closed.
+      const wait = Math.max(until ?? 3600, pollSeconds);
+      this.renderStale(
+        'throttled',
+        `The API has temporarily blocked this key for repeatedly polling past its cap ` +
+          `(HTTP 429 \`abuse_throttled\`, a 24-hour block). Polling resumes ${resumeText(wait)}. ` +
+          `If other clients share this key, check them for tight retry loops.`,
+      );
+      this.scheduleNext(wait);
+      return;
+    }
+
+    if (body.scope === 'day') {
+      const until =
+        typeof body.resets_at === 'string' ? secondsUntil(Date.parse(body.resets_at)) : undefined;
+      const wait = Math.max(until ?? err.retryAfter ?? pollSeconds, pollSeconds);
+      const cap = typeof body.limit_per_day === 'number' ? `${body.limit_per_day}/day` : 'daily';
+      this.renderStale(
+        'daily cap',
+        `The key's ${cap} request cap is spent. Polling resumes when the window resets, ` +
+          `${resumeText(wait)}. A BASIC key raises the cap to 1,000/day.`,
+      );
+      this.scheduleNext(wait);
+      return;
+    }
+
+    // Per-minute window. Honour retry-after; never poll faster than it asks.
+    const wait = Math.max(err.retryAfter ?? pollSeconds, pollSeconds);
+    this.renderStale('rate limited', `Rate limited. Retrying in ${wait}s.`);
+    this.scheduleNext(wait);
   }
 
   // -- rendering --------------------------------------------------------------
