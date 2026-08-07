@@ -17,6 +17,7 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version: '22'
+      - run: sh scripts/truthcheck.sh
       - run: npm ci
       - run: npm run typecheck
       - run: npm run compile
