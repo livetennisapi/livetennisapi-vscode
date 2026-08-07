@@ -13,10 +13,10 @@ npx @vscode/vsce package          # -> livetennisapi-scores-<version>.vsix
 
 ```bash
 # 1. VS Code Marketplace (publisher: livetennisapi)
-npx @vscode/vsce publish --packagePath livetennisapi-scores-0.1.0.vsix
+npx @vscode/vsce publish --packagePath livetennisapi-scores-0.2.0.vsix
 
 # 2. Open VSX (namespace: livetennisapi)
-npx ovsx publish livetennisapi-scores-0.1.0.vsix -p "$OVSX_PAT"
+npx ovsx publish livetennisapi-scores-0.2.0.vsix -p "$OVSX_PAT"
 ```
 
 Publishing the *same artifact* to both registries is the point — do not rebuild between the two, or
@@ -59,7 +59,7 @@ Verify what you are about to ship before publishing:
 
 ```bash
 npx @vscode/vsce ls                       # files that will be included
-unzip -l livetennisapi-scores-0.1.0.vsix  # what actually got in
+unzip -l livetennisapi-scores-0.2.0.vsix  # what actually got in
 ```
 
 ## The README currently has no screenshot — on purpose
