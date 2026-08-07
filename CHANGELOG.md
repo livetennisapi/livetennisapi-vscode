@@ -9,9 +9,33 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - Capture a real screenshot and add it to the README. (The generated placeholder image was
   removed; the README currently describes the status bar and match picker in text.)
-- README now documents the free tier's 1,000 requests/day cap: 60s polling crosses it after
-  ~16.7 hours of continuous uptime, so 90s+ is recommended for all-day sessions, and the
-  extension's actual behaviour on 429 is described.
+
+## [0.2.0] — 2026-08-07
+
+### Changed
+
+- **Default poll interval is now 900 seconds (15 minutes), up from 60.** The quota grid changed
+  on 2026-08-06 and the free tier's daily cap is **100 requests/day**; at 60s an always-on
+  editor makes 1,440 requests per 24 hours — over 14x the cap, spent after ~1.7 hours — where
+  900s stays at ≤96/day. The 60-second floor (the free tier's 30 requests/minute window) is
+  unchanged and still enforced in code; always-on polling faster than every 15 minutes belongs
+  on a BASIC key (1,000 requests/day). An earlier note in this changelog cited the
+  pre-2026-08-06 figures ("1,000 requests/day", "~16.7 hours"); those numbers are obsolete.
+- The `pollIntervalSeconds` setting description now spells out the daily arithmetic and when
+  BASIC is the right answer.
+
+### Added
+
+- **Distinct handling for all three 429 shapes.** The daily cap (`scope: "day"`) now sleeps
+  until the exact `resets_at` instant in the response body, and an `abuse_throttled` block
+  (24 hours, applied to chronically over-cap clients) sleeps until its `retry_at_epoch` with a
+  status-bar warning explaining the block — instead of retrying into it. The per-minute window
+  still honours `Retry-After`.
+- README: CI/license badges, an endpoint-and-tier table, the current quota grid (FREE 100/day,
+  BASIC 1,000/day, PRO 10,000/day, ULTRA 500,000/day), an authentication note, and a links
+  block (docs, free key, Discord, GitHub org).
+- `scripts/truthcheck.sh` and a CI step running it — the build now fails if stale quota copy or
+  known-wrong claims reappear.
 
 ## [0.1.0] — 2026-07-22
 
