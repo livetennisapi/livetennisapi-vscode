@@ -77,9 +77,9 @@
         },
         "livetennis.pollIntervalSeconds": {
           "type": "number",
-          "default": 60,
+          "default": 900,
           "minimum": 60,
-          "description": "Seconds between refreshes. The free tier allows 30 requests per minute, so 60 is the documented floor; values below 60 are clamped up to 60."
+          "description": "Seconds between refreshes. The default of 900 (15 minutes) keeps an always-on editor at ~96 requests/day, inside the free tier's 100 requests/day cap — 60s polling would spend 1,440/day, over 14x that cap. The floor is 60 (the free tier's 30 requests/minute budget); values below 60 are clamped up to 60. Always-on polling faster than every 15 minutes needs a BASIC key (1,000 requests/day)."
         },
         "livetennis.apiKey": {
           "type": "string",
