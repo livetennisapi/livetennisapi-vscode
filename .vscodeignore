@@ -13,6 +13,7 @@ media/icon.svg
 
 esbuild.mjs
 tools/**
+scripts/**
 BUILD_PLAN.md
 PUBLISHING.md
 .gitignore
