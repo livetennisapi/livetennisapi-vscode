@@ -10,6 +10,14 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Capture a real screenshot and add it to the README. (The generated placeholder image was
   removed; the README currently describes the status bar and match picker in text.)
 
+## [0.2.1] - 2026-08-16
+
+### Changed
+
+- Dependency bumps folded into a release: `undici` 7.29.0, `js-yaml` 4.3.1,
+  `fast-uri` 3.1.5, `esbuild` 0.28.1 (Dependabot #1-#4). No functional
+  changes.
+
 ## [0.2.0] — 2026-08-07
 
 ### Changed
