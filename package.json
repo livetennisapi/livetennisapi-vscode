@@ -1,8 +1,8 @@
 {
   "name": "livetennisapi-scores",
   "displayName": "Live Tennis Scores",
-  "description": "Live tennis scores and match state in your status bar — ATP, WTA, Challenger, ITF and juniors.",
-  "version": "0.2.0",
+  "description": "Live tennis scores and match state in your status bar \u2014 ATP, WTA, Challenger, ITF and juniors.",
+  "version": "0.2.1",
   "publisher": "livetennisapi",
   "author": {
     "name": "Live Tennis API",
@@ -79,12 +79,12 @@
           "type": "number",
           "default": 900,
           "minimum": 60,
-          "description": "Seconds between refreshes. The default of 900 (15 minutes) keeps an always-on editor at ~96 requests/day, inside the free tier's 100 requests/day cap — 60s polling would spend 1,440/day, over 14x that cap. The floor is 60 (the free tier's 30 requests/minute budget); values below 60 are clamped up to 60. Always-on polling faster than every 15 minutes needs a BASIC key (1,000 requests/day)."
+          "description": "Seconds between refreshes. The default of 900 (15 minutes) keeps an always-on editor at ~96 requests/day, inside the free tier's 100 requests/day cap \u2014 60s polling would spend 1,440/day, over 14x that cap. The floor is 60 (the free tier's 30 requests/minute budget); values below 60 are clamped up to 60. Always-on polling faster than every 15 minutes needs a BASIC key (1,000 requests/day)."
         },
         "livetennis.apiKey": {
           "type": "string",
           "default": "",
-          "markdownDescription": "**Migration only — not storage.** A key entered here is moved into VS Code's encrypted SecretStorage on the next activation and this setting is then cleared automatically. Prefer the **Live Tennis: Set API Key** command. Keys left in `settings.json` are replicated by Settings Sync and are easily pasted into bug reports."
+          "markdownDescription": "**Migration only \u2014 not storage.** A key entered here is moved into VS Code's encrypted SecretStorage on the next activation and this setting is then cleared automatically. Prefer the **Live Tennis: Set API Key** command. Keys left in `settings.json` are replicated by Settings Sync and are easily pasted into bug reports."
         }
       }
     }
