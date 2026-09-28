@@ -5,8 +5,9 @@
   "version": "0.2.2",
   "publisher": "livetennisapi",
   "author": {
-    "name": "Live Tennis API",
-    "email": "hello@livetennisapi.com"
+    "name": "Synapse Research Ltd",
+    "email": "hello@livetennisapi.com",
+    "url": "https://synapsereality.io"
   },
   "license": "MIT",
   "icon": "media/icon.png",
