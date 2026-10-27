@@ -107,5 +107,8 @@
     "esbuild": "^0.28.1",
     "ovsx": "^0.10.0",
     "typescript": "^5.5.0"
+  },
+  "overrides": {
+    "@azure/msal-node": "^7.1.0"
   }
 }
