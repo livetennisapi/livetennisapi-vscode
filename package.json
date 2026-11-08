@@ -109,6 +109,10 @@
     "typescript": "^7.0.2"
   },
   "overrides": {
-    "@azure/msal-node": "^7.1.0"
+    "@azure/msal-node": "^7.1.0",
+    "minimatch": "^11.0.1"
+  },
+  "//": {
+    "overrides.minimatch": "GHSA-g3hv-75wg-m249 (minimatch < 11.0.1). @vscode/vsce 4.1.0 pins minimatch ^10.2.6 and has no release on 11 yet. Drop this override once npm ls minimatch shows only 11.x without it."
   }
 }
