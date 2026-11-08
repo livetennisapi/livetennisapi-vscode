@@ -12,6 +12,9 @@
     "moduleResolution": "Bundler",
     "target": "ES2022",
     "lib": ["ES2022"],
+    // TypeScript 6 stopped pulling every @types/* package in by default.
+    // The extension host is Node, so its globals come from @types/node.
+    "types": ["node"],
     "outDir": "out",
     "rootDir": "src",
     "sourceMap": true,
