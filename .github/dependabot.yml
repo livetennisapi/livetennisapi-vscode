@@ -16,3 +16,7 @@ updates:
     groups:
       npm-minor-patch:
         update-types: [minor, patch]
+    ignore:
+      # @types/vscode must not exceed engines.vscode: `vsce package` refuses the
+      # manifest otherwise. Raise engines.vscode and @types/vscode together by hand.
+      - dependency-name: "@types/vscode"
